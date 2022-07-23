@@ -1,42 +1,42 @@
 """ Speech handlers. Converters and Savers. """
 
+from typing import NoReturn
 from gtts import gTTS  # Speech lib.
+from gtts.tts import gTTSError
 
 
 class LiveSpeechHandler:
-    """ """
     pass
 
 
 class TextSpeechHandler:
-    def __init__(self, lang: str = 'en'):
-        """Base speech handler. Receiving text string and voicing with gTTS.
+    """Base speech handler."""
 
-        :param lang: [String] Speech language. (Example) 'ru', 'en'.
-        """
-        self.language = lang
+    @classmethod
+    async def convert(cls, content, language: str = 'en') -> gTTS:
+        """Converter method. Receiving text string and voicing with gTTS.
 
-    def convert(self, text: str):
-        """Converter method. Voicing received data
-
-        :param text: [String] Text to be spoken.
+        :param content: [String] Text to be spoken.
+        :param language: [String] Speech language. (Example) 'ru', 'en'.
         :return: Raw record of speech.
         """
-        return gTTS(text=text, lang=self.language, slow=False)
+        return gTTS(text=content, lang=language, slow=False)
 
 
 class SpeechSaver:
-    def __init__(self, path: str, extension: str = 'mp3'):
+    @classmethod
+    async def save(cls,
+                   raw_speech,
+                   path2folder: str,
+                   extension: str = 'mp3'
+                   ) -> NoReturn:
         """Save raw record of speech.
 
-        :param path: Path to the folder where the mp3 will be saved.
+        :param raw_speech: Raw speech recording to be saved.
+        :param path2folder: [String] Path to the directory where the file will be saved.
+        :param extension: [String] Extension of the file. (Example) 'mp3', 'wav'
         """
-        self.save_path = path
-        self.save_ext = extension
-
-    def save(self, raw_speech):
-        """
-
-        :param raw_speech: Raw speech recording to be saved as mp3.
-        """
-        raw_speech.save(f'{self.save_path}.{self.save_ext}')
+        try:
+            raw_speech.save(f'{path2folder}.{extension}')
+        except gTTSError:
+            raise Exception(f'[X] Couldn\'t save speech into {extension} file!')
