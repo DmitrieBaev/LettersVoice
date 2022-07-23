@@ -1,65 +1,77 @@
 """ Handling text and preparing it for speech """
 
-import pdfplumber  # PDF lib.
+from pathlib import Path
 
 
 class LiveTextHandler:
     pass
 
 
+# region FileHandlers
 class DocumentTextHandlerInterface:
-    def __init__(self, path: str):
-        """Simple Interface for handling file to str converting.
+    """Simple Interface for handling file to str converting."""
 
-        :param path: [String] Path to file.
-        """
-        self.path2file = path
+    @classmethod
+    async def convert(cls, _path: Path) -> str:
+        """Converter method. Receiving path to file and converting data from file to string.
 
-    def convert(self) -> str:
-        """Converter method.
-
+        :param _path: [Path] Path to the file.
         :return: [String]
         """
         pass
 
 
 class TextHandler(DocumentTextHandlerInterface):
-    def __init__(self, path: str):
-        """TXT Handler. Receiving path to file and converting data from file to string.
+    """TXT Handler."""
 
-        :param path: [String] Path to file.
-        """
-        super().__init__(path)
+    @classmethod
+    async def convert(cls, path2file: Path) -> str:
+        import aiofiles
 
-    def convert(self) -> str:
-        with open(file=self.path2file, mode='r') as txt:
-            return txt.read()\
-                      .replace('\n', '')  # Required to remove a pause in line breaks for speech.
+        async with aiofiles.open(file=path2file, mode='r') as f:
+            content = await f.read()
+
+        return content.replace('\n', '')  # Required to remove a pause in line breaks for speech.
 
 
 class PDFTextHandler(DocumentTextHandlerInterface):
-    def __init__(self, path: str):
-        """PDF Handler. Receiving path to file and converting data from file to string.
+    """PDF Handler."""
 
-        :param path: [String] Path to file.
-        """
-        super().__init__(path)
+    @classmethod
+    async def convert(cls, path2file: Path) -> str:
+        import pdfplumber  # PDF lib.
 
-    def convert(self) -> str:
-        with pdfplumber.PDF(open(file=self.path2file, mode='rb')) as pdf:
+        with pdfplumber.PDF(open(file=path2file, mode='rb')) as pdf:
             return ''.join(
                 # Represent pages as solid text.
-                [page.extract_page() for page in pdf.pages]
+                [page.extract_text() for page in pdf.pages]
             ).replace('\n', '')  # Required to remove a pause in line breaks for speech.
 
 
-# TODO: Add DOC & DOCX Handler for 'en' and 'ru' languages
-# class DOCTextHandler(DocumentTextHandlerInterface):
-#     def __init__(self, path: str):
-#         super().__init__(path)
-#
-#     def convert(self) -> str:
-#         pass
+class DOCXTextHandler(DocumentTextHandlerInterface):
+    """DOCX Handler."""
+
+    @classmethod
+    async def convert(cls, path2file: Path) -> str:
+        import docx2txt  # DOCX lib.
+
+        return docx2txt.process(path2file)\
+                       .replace('\n', '')  # Required to remove a pause in line breaks for speech.
+
+
+class RTFTextHandler(DocumentTextHandlerInterface):
+    """DOCX Handler."""
+
+    @classmethod
+    async def convert(cls, path2file: Path) -> str:
+        import aiofiles
+        from striprtf.striprtf import rtf_to_text  # RTF lib.
+
+        async with aiofiles.open(file=path2file, mode='r') as f:
+            content = await f.read()
+
+        return rtf_to_text(content)\
+            .replace('\n', '')  # Required to remove a pause in line breaks for speech.
 
 
 # TODO: Add DJVU Handler for 'en' and 'ru' languages
@@ -69,3 +81,5 @@ class PDFTextHandler(DocumentTextHandlerInterface):
 #
 #     def convert(self) -> str:
 #         pass
+
+#endregion
