@@ -13,7 +13,7 @@ async def get_handler(suffix: str):
     :param suffix: [String] File extension.
     :return: Document handler or None.
     """
-    from core.globals import AVAILABLE_HANDLERS, ERRORS
+    from core.settings import AVAILABLE_HANDLERS, ERRORS
 
     try:
         return AVAILABLE_HANDLERS[suffix]

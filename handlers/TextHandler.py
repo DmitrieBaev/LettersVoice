@@ -1,7 +1,5 @@
 """ Handling text and preparing it for speech """
 
-from pathlib import Path
-
 
 class LiveTextHandler:
     pass
@@ -12,7 +10,7 @@ class DocumentTextHandlerInterface:
     """Simple Interface for handling file to str converting."""
 
     @classmethod
-    async def convert(cls, _path: Path) -> str:
+    async def convert(cls, _path: str) -> str:
         """Converter method. Receiving path to file and converting data from file to string.
 
         :param _path: [Path] Path to the file.
@@ -25,7 +23,7 @@ class TextHandler(DocumentTextHandlerInterface):
     """TXT Handler."""
 
     @classmethod
-    async def convert(cls, path2file: Path) -> str:
+    async def convert(cls, path2file: str) -> str:
         import aiofiles
 
         async with aiofiles.open(file=path2file, mode='r') as f:
@@ -38,7 +36,7 @@ class PDFTextHandler(DocumentTextHandlerInterface):
     """PDF Handler."""
 
     @classmethod
-    async def convert(cls, path2file: Path) -> str:
+    async def convert(cls, path2file: str) -> str:
         import pdfplumber  # PDF lib.
 
         with pdfplumber.PDF(open(file=path2file, mode='rb')) as pdf:
@@ -52,7 +50,7 @@ class DOCXTextHandler(DocumentTextHandlerInterface):
     """DOCX Handler."""
 
     @classmethod
-    async def convert(cls, path2file: Path) -> str:
+    async def convert(cls, path2file: str) -> str:
         import docx2txt  # DOCX lib.
 
         return docx2txt.process(path2file)\
@@ -63,7 +61,7 @@ class RTFTextHandler(DocumentTextHandlerInterface):
     """DOCX Handler."""
 
     @classmethod
-    async def convert(cls, path2file: Path) -> str:
+    async def convert(cls, path2file: str) -> str:
         import aiofiles
         from striprtf.striprtf import rtf_to_text  # RTF lib.
 
